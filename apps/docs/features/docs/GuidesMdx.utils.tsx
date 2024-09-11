@@ -33,7 +33,7 @@ const PUBLISHED_SECTIONS = [
   'resources',
   'self-hosting',
   'storage',
-  'warehouse'
+  'warehouse',
 ] as const
 
 const getGuidesMarkdownInternal = async ({ slug }: { slug: string[] }) => {
