@@ -102,6 +102,42 @@ To call a read-only Postgres function on Read Replicas through the REST API, use
 
 If you remove all Read Replicas from your project, the load balancer and its endpoint are removed as well. Make sure to redirect requests back to your Primary database before removal.
 
+#### Experimental Routing
+
+The API load balancer offers an experimental routing mode that builds on top of the existing funtionality. It is now possible to use your load balancer endpoint for all Supabase services (Auth, Edge Functions, Realtime, and Storage) meaning you do not need to worry about which endpoint you need to use in which situations.
+
+<Admonition type="note">
+
+Due to the requirements of the Auth service, all Auth requests are handled by the Primary, even when sent over the load balancer endpoint. This is similar to how non-Read requests for the Data API (PostgREST) are exclusively handled by the Primary.
+
+</Admonition>
+
+The experimental routing mode can be enabled by sending the header `sb-lb-routing-mode: alpha-all-services` along with any requests. This gives the option to opt-in and try out the new routing, but still have the peace of mind that the original behavior is there should it be needed. Please let us know if you have any feedback by [contacting us](https://supabase.com/support).
+
+What follows is an example of using the `supabase-js` library to create a new client with the appropriate headers.
+
+```ts ./create-client.ts
+import { createClient } from "@supabase/supabase-js";
+
+// Supabase credentials from the environment
+const supabaseUrl = process.env.SUPABASE_URL as string;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY as string;
+
+// Initialize the Supabase client with custom headers
+export default createSupabaseClient() {
+  // Create and return the new client
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        'sb-lb-routing-mode': 'alpha-all-services'
+      }
+    }
+  })
+}
+```
+
+This client creation function can be used throughout an application as required to take advantage of the new experimental routing functionality.
+
 <Admonition type="caution">
 
 If you use a [custom domain](/docs/guides/platform/custom-domains), requests will not be routed through the load balancer. You should instead use the dedicated endpoints provided in the dashboard.
